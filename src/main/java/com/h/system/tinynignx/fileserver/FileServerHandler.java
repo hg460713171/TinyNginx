@@ -1,4 +1,4 @@
-package com.h.system.tinynignx.handle;
+package com.h.system.tinynignx.fileserver;
 
 
 import com.h.system.tinynignx.util.HttpWirteResponseUtil;
@@ -13,13 +13,22 @@ import java.io.RandomAccessFile;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class FileServerHandler extends ChannelInboundHandlerAdapter {
 
 
 
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, FullHttpRequest request) throws Exception {
+    public void channelRead(ChannelHandlerContext channelHandlerContext, Object msg) throws Exception {
+
         //request.retain();
         HttpResponse response = null;
+
+        FullHttpRequest request = (FullHttpRequest)msg;
+        String p=request.uri();          //获取路径
+
+
+        if("/webapp".equalsIgnoreCase(p)){
+            return;
+        }
         RandomAccessFile randomAccessFile = null;
         try{
             // 状态为1xx的话，继续请求
@@ -27,21 +36,21 @@ public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpReque
                 send100Continue(channelHandlerContext);
             }
             String uri = request.uri();
-            if(!uri.endsWith(".js") && !uri.endsWith(".css") && !uri.endsWith(".html")){
-                channelHandlerContext.fireChannelRead(request);
-                return;
-            }
-            // hello/a.js
+//            if(!uri.endsWith(".js") && !uri.endsWith(".css") && !uri.endsWith(".html")){
+//                channelHandlerContext.fireChannelRead(request);
+//                return;
+//            }
             int index = uri.lastIndexOf("/") + 1;
             if(index == -1){
                 HttpWirteResponseUtil.writeResponse(request, OK, channelHandlerContext);
-               return;
+                return;
             }
             String filename = uri.substring(index);
             uri = uri.substring(0, index-1);
-            String path = "/home/hou/IdeaProjects/TinyNginx/src/main/resources";
+            String path = "/home/hou/IdeaProjects/TinyNginx/src/main/resources/dist"+uri.toString();
 
             String fullPath = path+ "/"+filename;
+            System.out.println(filename);
             File file = new File(fullPath);
             try {
                 randomAccessFile = new RandomAccessFile(file, "r");
@@ -73,12 +82,12 @@ public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpReque
                 @Override
                 public void operationProgressed(ChannelProgressiveFuture future,
                                                 long progress, long total) {
-                    if (total < 0) { // total unknown
-                        System.out.println("Transfer progress: " + progress);
-                    } else {
-                        System.out.println("Transfer progress: " + progress + " / "
-                                + total);
-                    }
+//                    if (total < 0) { // total unknown
+//                        System.out.println("Transfer progress: " + progress);
+//                    } else {
+//                        System.out.println("Transfer progress: " + progress + " / "
+//                                + total);
+//                    }
                 }
 
                 @Override

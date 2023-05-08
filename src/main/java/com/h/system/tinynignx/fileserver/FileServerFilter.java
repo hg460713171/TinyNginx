@@ -1,8 +1,6 @@
-package com.h.system.tinynignx.server;
+package com.h.system.tinynignx.fileserver;
 
-import com.h.system.tinynignx.fileserver.FileServerHandler;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -10,7 +8,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 
-public class NettyServerFilter extends ChannelInitializer<SocketChannel> {
+public class FileServerFilter extends ChannelInitializer<SocketChannel> {
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
@@ -18,6 +16,7 @@ public class NettyServerFilter extends ChannelInitializer<SocketChannel> {
         ch.pipeline().addLast("decoder",new HttpRequestDecoder());
         ch.pipeline().addLast("aggregator", new HttpObjectAggregator(10*1024*1024));//把单个http请求转为FullHttpReuest或FullHttpResponse
         ch.pipeline().addLast(new ChunkedWriteHandler());
-        ch.pipeline().addLast("httphandler", new NettyHttpHandler());// 服务端业务逻辑
+        ch.pipeline().addLast("handler", new FileServerHandler());// 服务端业务逻辑
+
     }
 }
