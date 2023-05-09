@@ -2,16 +2,13 @@ package com.h.system.tinynignx.client;
  
 import com.h.system.tinynignx.util.LifeCycle;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.*;
- 
-import java.net.URI;
- 
+
+
  
 public class HttpClient implements LifeCycle {
     private static final boolean SSL = false;

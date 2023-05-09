@@ -40,7 +40,7 @@ public class NettyServer implements LifeCycle {
             ResourcesService rs = ResourcesService.getInstance();
             String port = rs.getProperties("port");
             ServerBootstrap bootstrap = new ServerBootstrap();
-            EventLoopGroup group =  newEventLoopGroup(4,null);
+            EventLoopGroup group =  newEventLoopGroup(1,null);
             this.group = group;
             this.bootstrap = bootstrap;
             bootstrap.group(group);

@@ -5,6 +5,7 @@ import com.h.system.tinynignx.loadbalance.AbstractLoadBalancer;
 import com.h.system.tinynignx.loadbalance.BaseRouter;
 import com.h.system.tinynignx.loadbalance.LoadBalancerHolder;
 import com.h.system.tinynignx.pool.ChannelPool;
+import com.h.system.tinynignx.pool.ChannelPoolHolder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -52,16 +53,19 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
                     .set(HttpHeaderNames.CONTENT_LENGTH,
                             request.content().readableBytes());
             // 发送http请求
+            synchronized (this){
+                ChannelPool channelPool = ChannelPoolHolder.getInstance().getChannelPool();
+                channelPool.getClientChannelMap().put(client.channelFuture.channel().id().asLongText(),
+                        client.channelFuture.channel());
+
+                channelPool.getServerChannelMap().put(ctx.channel().id().asLongText(),
+                        ctx.channel());
+
+                channelPool.getClientToServer().put(client.channelFuture.channel().id().asLongText(),
+                        ctx.channel().id().asLongText());
+            }
             client.channelFuture.channel().writeAndFlush(request);
 
-            ChannelPool.clientChannelMap.put(client.channelFuture.channel().id().asLongText(),
-                    client.channelFuture.channel());
-
-            ChannelPool.ServerChannelMap.put(ctx.channel().id().asLongText(),
-                    ctx.channel());
-
-            ChannelPool.clientToServer.put(client.channelFuture.channel().id().asLongText(),
-                    ctx.channel().id().asLongText());
 //
 //            send(ctx,result,HttpResponseStatus.OK);
 

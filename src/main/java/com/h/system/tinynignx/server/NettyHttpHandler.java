@@ -44,7 +44,12 @@ public class NettyHttpHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("连接的客户端地址:" + ctx.channel().remoteAddress());
+        String ip = ctx.channel().remoteAddress().toString();
+        System.out.println("连接的客户端地址:" +ip);
+
+
+        System.out.println("dd1:" + ctx.channel().remoteAddress());
+
         ctx.writeAndFlush("客户端"+ InetAddress.getLocalHost().getHostName() + "成功与服务端建立连接！ ");
         super.channelActive(ctx);
     }
