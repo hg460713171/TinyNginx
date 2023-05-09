@@ -34,7 +34,6 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
 
     public RoundRobinByWeightLoadBalance(){
         super();
-
     }
 
     /**
@@ -49,42 +48,42 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
      */
 
 
-    private boolean checkNodes(List<? extends AbstractRouter> routers){
+    private boolean checkNodes(List<? extends BaseRouter> routers){
         return (routers != null && routers.size() > 0);
     }
 
 
-    public static void main(String[] args){
-        List<Router> nodes = new ArrayList<>();
-        Router r1 = new Router("12",12,10);
-        Router r2 = new Router("123",12,1);
-        Router r3 = new Router("1234",12,2);
-        nodes.add(r1);
-        nodes.add(r2);
-        nodes.add(r3);
-        Integer times = 20;
-        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
-        for(int i=0; i<times;i++){
-            System.out.println(roundRobin.getRouter(null,null).getIp());
-
-        }
-
-
-    }
+//    public static void main(String[] args){
+//        List<Router> nodes = new ArrayList<>();
+//        Router r1 = new Router("12",12,10);
+//        Router r2 = new Router("123",12,1);
+//        Router r3 = new Router("1234",12,2);
+//        nodes.add(r1);
+//        nodes.add(r2);
+//        nodes.add(r3);
+//        Integer times = 20;
+//        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
+//        for(int i=0; i<times;i++){
+//            System.out.println(roundRobin.getRouter(null,null).getIp());
+//
+//        }
+//
+//
+//    }
 
     @Override
-    public AbstractRouter getRouter(HttpRequest request, String host) {
+    public BaseRouter getRouter(HttpRequest request, String host) {
         if (!checkNodes(routers))
             return null;
         else if (routers.size() == 1) {
-            if (((Router)routers.get(0)).isAvalable())
+            if (routers.get(0).isAvalable())
                 return routers.get(0);
             else
                 return null;
         }
         Integer total = 0;
         Router nodeOfMaxWeight = null;
-        for (AbstractRouter node : routers) {
+        for (BaseRouter node : routers) {
             Router realNode = (Router)node;
             total += realNode.getEffectiveWeight();
             realNode.setCurrentWeight(realNode.getCurrentWeight() + realNode.getEffectiveWeight());
@@ -96,5 +95,15 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
         }
         nodeOfMaxWeight.setCurrentWeight(nodeOfMaxWeight.getCurrentWeight()-total);
         return nodeOfMaxWeight;
+    }
+
+    @Override
+    public void initRoutes(List<BaseRouter> routers) {
+        List<Router> list = new ArrayList<>();
+        for(BaseRouter baseRouter: routers){
+            Router router = new Router(baseRouter.getIp(),baseRouter.getPort(), baseRouter.getValue());
+            list.add(router);
+        }
+        super.routers = list;
     }
 }

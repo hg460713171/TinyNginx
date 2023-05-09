@@ -1,6 +1,6 @@
 package com.h.system.tinynignx.loadbalance;
 
-public class Router extends AbstractRouter{
+public class Router extends BaseRouter {
 
     /**
      *  权重 是固定不变的
@@ -26,13 +26,13 @@ public class Router extends AbstractRouter{
     /**
      * 后端是否可达
      */
-    private boolean isAvalable;
 
 
-    public Router(String ip, Integer port,Integer weight) {
-        super(ip, port);
-        this.weight = weight;
-        this.effectiveWeight = weight;
+
+    public Router(String ip, Integer port,String weight) {
+        super(ip, port,weight);
+        this.weight = Integer.valueOf(weight);
+        this.effectiveWeight = Integer.valueOf(weight);
         this.currentWeight = 0;
     }
 
@@ -56,13 +56,7 @@ public class Router extends AbstractRouter{
         this.weight = weight;
     }
 
-    public boolean isAvalable() {
-        return isAvalable;
-    }
 
-    public void setAvalable(boolean avalable) {
-        isAvalable = avalable;
-    }
 
 
     public Integer getEffectiveWeight() {

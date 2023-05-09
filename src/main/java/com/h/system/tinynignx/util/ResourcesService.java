@@ -83,6 +83,8 @@ public class ResourcesService {
             return null;
     }
 
+
+
     public HashMap<String, String> getUrlMap() {
         return urlMap;
     }

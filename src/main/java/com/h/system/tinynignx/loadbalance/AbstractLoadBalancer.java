@@ -3,13 +3,16 @@ package com.h.system.tinynignx.loadbalance;
 import java.net.http.HttpRequest;
 import java.util.List;
 
-public class AbstractLoadBalancer implements LoadBalancer{
+public abstract class AbstractLoadBalancer implements LoadBalancer{
 
-    List<? extends AbstractRouter> routers;
+    List<? extends BaseRouter> routers;
 
 
     @Override
-    public AbstractRouter getRouter(HttpRequest request, String host) {
-        return null;
+    public abstract BaseRouter getRouter(HttpRequest request, String host);
+
+
+    public void initRoutes(List<BaseRouter> routers){
+        this.routers = routers;
     }
 }
