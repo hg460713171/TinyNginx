@@ -1,6 +1,9 @@
 package com.h.system.tinynignx.handler;
 
 import com.h.system.tinynignx.client.HttpClient;
+import com.h.system.tinynignx.loadbalance.AbstractLoadBalancer;
+import com.h.system.tinynignx.loadbalance.BaseRouter;
+import com.h.system.tinynignx.loadbalance.LoadBalancerHolder;
 import com.h.system.tinynignx.pool.ChannelPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -27,10 +30,12 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
             HttpMethod method=httpRequest.method();//获取请求方法
             //如果不是这个路径，就直接返回错误
             System.out.println("body:"+body);
-            HttpClient client = new HttpClient();
-            client.connect("192.168.31.141", 8081);
+
+            AbstractLoadBalancer al = LoadBalancerHolder.getInstance().getLoadBalancer();
             InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
-            System.out.println(socketAddress.getHostString());
+            BaseRouter baseRouter = al.getRouter(httpRequest,socketAddress.getHostString());
+            HttpClient client = HttpClient.init(baseRouter.getIp(),baseRouter.getPort());
+
 
             DefaultFullHttpRequest request =
                     new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
@@ -39,7 +44,7 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
                             Unpooled.wrappedBuffer(body.getBytes("UTF-8")));
 
             // 构建http请求
-            request.headers().set(HttpHeaderNames.HOST, "192.168.31.141");
+            request.headers().set(HttpHeaderNames.HOST, baseRouter.getIp());
             request.headers()
                     .set(HttpHeaderNames.CONNECTION,
                             HttpHeaderValues.KEEP_ALIVE);

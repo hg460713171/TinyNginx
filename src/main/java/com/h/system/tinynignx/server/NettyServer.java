@@ -20,8 +20,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import java.util.concurrent.ThreadFactory;
 
 public class NettyServer implements LifeCycle {
-    private   EventLoopGroup group;  // 通过nio方式来接收连接和处理连接
-    private   ServerBootstrap bootstrap;
+    private EventLoopGroup group;  // 通过nio方式来接收连接和处理连接
+    private ServerBootstrap bootstrap;
 
 
     public static Class<? extends ServerSocketChannel> getSocketChannel(){
@@ -35,7 +35,7 @@ public class NettyServer implements LifeCycle {
     }
 
     @Override
-    public void init() throws Throwable {
+    public void init() throws Exception {
         try {
             ResourcesService rs = ResourcesService.getInstance();
             String port = rs.getProperties("port");
@@ -43,7 +43,6 @@ public class NettyServer implements LifeCycle {
             EventLoopGroup group =  newEventLoopGroup(4,null);
             this.group = group;
             this.bootstrap = bootstrap;
-
             bootstrap.group(group);
             bootstrap.channel(getSocketChannel());
             bootstrap.childHandler(new NettyServerFilter())
@@ -63,7 +62,7 @@ public class NettyServer implements LifeCycle {
     }
 
     @Override
-    public void destroy() throws Throwable {
+    public void destroy() throws Exception {
         group.shutdownGracefully();
     }
 }

@@ -33,12 +33,12 @@ public class FileServer implements LifeCycle {
     }
 
     @Override
-    public void init() throws Throwable {
+    public void init() throws Exception {
 
     }
 
     @Override
-    public void destroy() throws Throwable {
+    public void destroy() throws Exception {
 
     }
 

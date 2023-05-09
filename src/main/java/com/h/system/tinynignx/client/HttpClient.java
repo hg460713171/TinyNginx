@@ -34,19 +34,19 @@ public class HttpClient implements LifeCycle {
  
     }
 
-    public static HttpClient init(String host, int port) throws Throwable {
+    public static HttpClient init(String host, int port) throws Exception {
         HttpClient client = new HttpClient();
-        client.connect("host", port);
+        client.connect(host, port);
         return client;
     }
 
     @Override
-    public void init() throws Throwable {
+    public void init() throws Exception {
 
     }
 
     @Override
-    public void destroy() throws Throwable {
+    public void destroy() throws Exception {
 
     }
 }

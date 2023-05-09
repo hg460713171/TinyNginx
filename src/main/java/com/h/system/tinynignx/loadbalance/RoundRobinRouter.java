@@ -1,6 +1,6 @@
 package com.h.system.tinynignx.loadbalance;
 
-public class Router extends BaseRouter {
+public class RoundRobinRouter extends BaseRouter {
 
     /**
      *  权重 是固定不变的
@@ -29,14 +29,14 @@ public class Router extends BaseRouter {
 
 
 
-    public Router(String ip, Integer port,String weight) {
+    public RoundRobinRouter(String ip, Integer port, String weight) {
         super(ip, port,weight);
         this.weight = Integer.valueOf(weight);
         this.effectiveWeight = Integer.valueOf(weight);
         this.currentWeight = 0;
     }
 
-    public int compareTo(Router o) {
+    public int compareTo(RoundRobinRouter o) {
         return currentWeight > o.currentWeight ? 1 : (currentWeight.equals(o.currentWeight) ? 0 : -1);
     }
 

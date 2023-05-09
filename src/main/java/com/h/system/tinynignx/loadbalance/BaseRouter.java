@@ -23,6 +23,7 @@ public class BaseRouter implements Comparable<BaseRouter>{
         this.ip = ip;
         this.port = port;
         this.value = value;
+        this.isAvalable = true;
     }
 
     @Override

@@ -1,8 +1,9 @@
 package com.h.system.tinynignx.loadbalance;
 
-import java.net.http.HttpRequest;
+import io.netty.handler.codec.http.FullHttpRequest;
+
 
 public interface LoadBalancer {
-    BaseRouter getRouter(HttpRequest request, String host);
+    BaseRouter getRouter(FullHttpRequest request, String host);
 
 }

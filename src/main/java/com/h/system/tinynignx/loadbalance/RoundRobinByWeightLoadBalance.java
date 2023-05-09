@@ -1,5 +1,7 @@
 package com.h.system.tinynignx.loadbalance;
 
+import io.netty.handler.codec.http.FullHttpRequest;
+
 import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +74,7 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
 //    }
 
     @Override
-    public BaseRouter getRouter(HttpRequest request, String host) {
+    public BaseRouter getRouter(FullHttpRequest request, String host) {
         if (!checkNodes(routers))
             return null;
         else if (routers.size() == 1) {
@@ -82,9 +84,9 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
                 return null;
         }
         Integer total = 0;
-        Router nodeOfMaxWeight = null;
+        RoundRobinRouter nodeOfMaxWeight = null;
         for (BaseRouter node : routers) {
-            Router realNode = (Router)node;
+            RoundRobinRouter realNode = (RoundRobinRouter)node;
             total += realNode.getEffectiveWeight();
             realNode.setCurrentWeight(realNode.getCurrentWeight() + realNode.getEffectiveWeight());
             if (nodeOfMaxWeight == null) {
@@ -99,11 +101,13 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
 
     @Override
     public void initRoutes(List<BaseRouter> routers) {
-        List<Router> list = new ArrayList<>();
+        List<RoundRobinRouter> list = new ArrayList<>();
         for(BaseRouter baseRouter: routers){
-            Router router = new Router(baseRouter.getIp(),baseRouter.getPort(), baseRouter.getValue());
+            RoundRobinRouter router = new RoundRobinRouter(baseRouter.getIp(),baseRouter.getPort(), baseRouter.getValue());
             list.add(router);
         }
         super.routers = list;
     }
+
+
 }
