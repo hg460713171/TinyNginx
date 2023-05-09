@@ -1,5 +1,6 @@
 package com.h.system.tinynignx.client;
  
+import com.h.system.tinynignx.util.LifeCycle;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -12,7 +13,7 @@ import io.netty.handler.codec.http.*;
 import java.net.URI;
  
  
-public class HttpClient {
+public class HttpClient implements LifeCycle {
     private static final boolean SSL = false;
 
     public ChannelFuture channelFuture;
@@ -28,13 +29,24 @@ public class HttpClient {
             ChannelFuture f = b.connect(host, port).sync();
             channelFuture = f;
         } finally {
-            //workerGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
  
     }
- 
-    public static void main(String[] args) throws Exception {
+
+    public static HttpClient init(String host, int port) throws Throwable {
         HttpClient client = new HttpClient();
-        client.connect("192.168.31.141", 8081);
+        client.connect("host", port);
+        return client;
+    }
+
+    @Override
+    public void init() throws Throwable {
+
+    }
+
+    @Override
+    public void destroy() throws Throwable {
+
     }
 }

@@ -37,13 +37,13 @@ public class NettyServer implements LifeCycle {
     @Override
     public void init() throws Throwable {
         try {
-
-            ServerBootstrap bootstrap = new ServerBootstrap();
-            EventLoopGroup group =  newEventLoopGroup();
-            this.group = group;
-            this.bootstrap = bootstrap;
             ResourcesService rs = ResourcesService.getInstance();
             String port = rs.getProperties("port");
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            EventLoopGroup group =  newEventLoopGroup(4,null);
+            this.group = group;
+            this.bootstrap = bootstrap;
+
             bootstrap.group(group);
             bootstrap.channel(getSocketChannel());
             bootstrap.childHandler(new NettyServerFilter())

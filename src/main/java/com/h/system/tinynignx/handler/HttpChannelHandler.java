@@ -8,6 +8,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 
 public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
@@ -18,7 +20,6 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
             send(ctx,result, HttpResponseStatus.BAD_REQUEST);
             return;
         }
-        boolean keepAlive = true;
         FullHttpRequest httpRequest = (FullHttpRequest)msg;
         try{
             String path=httpRequest.uri();          //获取路径
@@ -26,11 +27,10 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
             HttpMethod method=httpRequest.method();//获取请求方法
             //如果不是这个路径，就直接返回错误
             System.out.println("body:"+body);
-
             HttpClient client = new HttpClient();
             client.connect("192.168.31.141", 8081);
-
-
+            InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+            System.out.println(socketAddress.getHostString());
 
             DefaultFullHttpRequest request =
                     new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
