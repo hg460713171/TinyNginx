@@ -48,7 +48,7 @@ public class FileServerHandler extends ChannelInboundHandlerAdapter {
             }
             String filename = uri.substring(index);
             uri = uri.substring(0, index-1);
-            String path = "/home/hou/IdeaProjects/TinyNginx/src/main/resources/dist"+uri.toString();
+            String path = ResourcesService.getInstance().getProperties("frontend.url")+uri.toString();
 
             String fullPath = path+ "/"+filename;
             System.out.println(filename);
