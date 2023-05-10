@@ -1,6 +1,7 @@
 package com.h.system.tinynignx.handler;
 
 import com.h.system.tinynignx.util.HttpChannelUtils;
+import com.h.system.tinynignx.util.ResourcesService;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedNioFile;
@@ -23,7 +24,7 @@ public class FileChannelHandler {
         String p=request.uri();          //获取路径
 
 
-        if("/webapp".equalsIgnoreCase(p)){
+        if(("/"+ ResourcesService.getInstance().getProperties("backend.prefix")).equalsIgnoreCase(p)){
             return;
         }
         RandomAccessFile randomAccessFile = null;
