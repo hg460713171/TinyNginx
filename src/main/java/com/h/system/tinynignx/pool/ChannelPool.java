@@ -27,25 +27,16 @@ public class ChannelPool  {
         return clientChannelMap;
     }
 
-    public void setClientChannelMap(Map<String, Channel> clientChannelMap) {
-        this.clientChannelMap = clientChannelMap;
-    }
 
     public Map<String, Channel> getServerChannelMap() {
         return ServerChannelMap;
     }
 
-    public void setServerChannelMap(Map<String, Channel> serverChannelMap) {
-        ServerChannelMap = serverChannelMap;
-    }
 
     public Map<String, String> getClientToServer() {
         return clientToServer;
     }
 
-    public void setClientToServer(Map<String, String> clientToServer) {
-        this.clientToServer = clientToServer;
-    }
 
 
 

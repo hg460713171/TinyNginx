@@ -251,14 +251,12 @@ public class NettyChannelPool {
         if (null != future) {
             HttpChannelUtils.attributeRoute(future.channel(), route);
             future.addListener(new ChannelFutureListener() {
-
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
                         future.channel().closeFuture().addListener(new ChannelFutureListener() {
                             @Override
                             public void operationComplete(ChannelFuture future) throws Exception {
-
                                 logger.log(Level.SEVERE, future.channel() + " closed, exception: "
                                                          + future.cause());
                                 removeChannel(future.channel(), future.cause());

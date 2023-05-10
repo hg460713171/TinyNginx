@@ -2,7 +2,6 @@ package com.h.system.tinynignx.loadbalance;
 
 import io.netty.handler.codec.http.FullHttpRequest;
 
-import java.net.http.HttpRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +44,6 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
      *  同时累加所有peer的effective_weight，保存为total。
      * 2. 从集群中选出current_weight最大的peer，作为本次选定的后端。
      * 3. 对于本次选定的后端，执行：peer->current_weight -= total。
-     *
-     * @Return ivoker
      */
 
 
@@ -54,24 +51,6 @@ public class RoundRobinByWeightLoadBalance extends AbstractLoadBalancer{
         return (routers != null && routers.size() > 0);
     }
 
-
-//    public static void main(String[] args){
-//        List<Router> nodes = new ArrayList<>();
-//        Router r1 = new Router("12",12,10);
-//        Router r2 = new Router("123",12,1);
-//        Router r3 = new Router("1234",12,2);
-//        nodes.add(r1);
-//        nodes.add(r2);
-//        nodes.add(r3);
-//        Integer times = 20;
-//        RoundRobinByWeightLoadBalance roundRobin = new RoundRobinByWeightLoadBalance();
-//        for(int i=0; i<times;i++){
-//            System.out.println(roundRobin.getRouter(null,null).getIp());
-//
-//        }
-//
-//
-//    }
 
     @Override
     public BaseRouter getRouter(FullHttpRequest request, String host) {

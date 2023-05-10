@@ -95,23 +95,100 @@ frontend.url = /home/hou/IdeaProjects/TinyNginx/src/main/resources/dist
 
 未来在servicemesh化的过程中 ingress，sidecar等的出现 使得负载均衡器将更加重要。 
 ## server的实现
-基于netty 实现server 
+基于netty 实现server，相当于此项目的主线程 netty接收前端的请求，根据不同的类型分发到不同的handler
+主要有两种handler 
+
+一种用来处理反向代理请求
+
+另一种用来处理静态文件请求
+
+详情见 NettyServer 类
+
 ## client+连接池的实现
-基于netty 实现client
+### 为什么要实现连接池
+由于TCP连接是个重量级的开销，所以现行的http1.1都是以长连接的形式存在，也就是keepalive==true
+由于由于http1.1 的channel 这个连接必须等到一个http接收后，才能再进行复用。
+
+这就决定了入池和出池的规则：
+```agsl
+入池： 当请求完毕时 也就是在channelRead的最后
 
 
-NettyChannelPool 类的实现
+出池： 1、请求来临时 2、连接被关闭
+```
+### 连接池处理过程
+#### 新连接来临
+新请求来临时 如果采用池中的连接是很快的
+但是如果此时池子中没有连接，则需要新建连接，此时netty的优势就体现出来了
+核心代码见sendRequestUseNewChannel方法
 
+伪代码如下：
+````agsl
+ server.channelRead {
+     future = client.connect();
+     future.onComplete{
+          wirteAndFlush()
+     }
+ }
+    
+````
+server并不需要等待这个client的连接成功，而是可以继续处理下一个请求
+
+#### 老连接
+如果发现存在空闲连接 直接从map中取就好
+
+
+
+
+
+
+````agsl
+
+注：同ip+port下，http2是可以复用的,
+
+http3 改为udp了 所以任何连接都可以使用同一个channel.
+
+大致的原因是 http2 在http层面加入了某种标识，所以无论发送方顺序如何，接收方总是能找到对应的http响应
+（但tcp包不能乱，所以无法实现不同ip+port的channel的复用）
+
+http3 在不仅在应用层还在传输层加入了某种标识，所有可以整个系统共用一个socket内存区
+
+经典八股 就不再赘述了
+````
 ## 负载均衡算法的实现
+RoundRobinByWeightLoadBalance 实现平滑负载均衡
+
+
+负载均衡算法网上比较多，就略了
 ### 扩展负载均衡算法
-## 高并发的实现
-## 整合Prometheus----实现根据负载动态上下线
-## 限流的实现
+只需要实现 AbstractLoadBalancer ,可以根据request 里的header body 等进行负载均衡
+```agsl
+    public abstract BaseRouter getRouter(FullHttpRequest request, String host);
+```
+## 为什么这个模型可以支持高并发
+
+![5.png](static%2F5.png)
+一次完整的请求需要经历以上4个阶段，这些阶段全部是基于事件模型进行处理， 简单理解：事件不发生，服务器可以去干其他的事情
+
+
+## 动态负载均衡（未实现）
+### 整合Prometheus----实现根据负载动态上下线
+这个实现起来比较简单 通过Grafana 的url 定时拉取 
+
+根据规则匹配 实现动态上线下线
+## 限流的实现（未实现）
 ### 基于tps限流
+思路 tps限流比较简单只需要在入口处 用滑窗或令牌桶统计即可，
 ### 基于并发数的限流
-## 压测
+并发数的限流 不仅需要在入口处进行+1，还需要在出口进行-1
+## 压测 （未测试）
+jmeter
 ## nginx与tomcat与rpc
-
-
-
-  
+因为nginx是c写的 对java程序员来说，只能看个大概思路，细节上很难在短时间内把握，所以我参考了tomcat和sofa 和dubbo的一些实现
+我发现这几个存在很多共通之处，下面放一下他们之间架构图的对比
+负载均衡器
+![1.png](static%2F1.png)
+RPC
+![6.png](static%2F6.png)
+tomcat
+![7.png](static%2F7.png)
