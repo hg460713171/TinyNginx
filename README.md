@@ -49,7 +49,7 @@ resources/dist 里的是我从 https://github.com/lin-xin/vue-manage-system.git 
 
 config.properties的 frontend.url 修改为你自己的前端目录。
 
-3. 启动后端
+3. 启动一个或多个springmvc后端 
 可以使用自己的后端服务器，也可以使用配套提供的简易后端
 ```
 git clone https://github.com/hg460713171/TinyNginxBackend.git
@@ -58,7 +58,7 @@ git clone https://github.com/hg460713171/TinyNginxBackend.git
 4.参数配置 
 参数在 config.properties 里面
 
-```agsl
+```
 port=8081  
 # tinynginx启动的端口号
 
@@ -84,17 +84,23 @@ frontend.url = /home/hou/IdeaProjects/TinyNginx/src/main/resources/dist
 
 ![3.png](static%2F3.png)
 
-后端：在postman上 发送post请求 http://localhost:8081/webapp/home/dologin
+后端：在postman上 发送post请求 http://localhost:8081/webapp/home/dologin 
 
 ![4.png](static%2F4.png)
 ## 负载均衡的介绍
-负载均衡器在实际的生
+负载均衡器在实际的生产中的有非常多的应用，
+比较常用的L4的均衡器有 F5等, L7的均衡器有nginx，haproxy
+
+除此之外，还有很多隐蔽的角落用到了负载均衡，比如rpc的负载均衡，异地多活场景下的全局机房负载均衡，数据库读写分离proxy等。
+
+未来在servicemesh化的过程中 ingress，sidecar等的出现 使得负载均衡器将更加重要。 
 ## server的实现
+基于netty 实现server 
 ## client+连接池的实现
 ## 负载均衡算法的实现
 ### 扩展负载均衡算法
 ## 高并发的实现
-## 整合Prometheus----实现根据负载动态上下线后端服务器
+## 整合Prometheus----实现根据负载动态上下线
 ## 限流的实现
 ### 基于tps限流
 ### 基于并发数的限流
