@@ -12,6 +12,6 @@ public class HttpClientFilter extends ChannelInitializer<SocketChannel> {
         ch.pipeline().addLast("decoder",new HttpRequestDecoder());
         ch.pipeline().addLast("aggregator", new HttpObjectAggregator(10*1024*1024));
         ch.pipeline().addLast("decompressor",new HttpContentDecompressor());
-        ch.pipeline().addLast("busi",new HttpClientInboundHandler());
+        ch.pipeline().addLast("httphandler",new HttpClientInboundHandler());
     }
 }
