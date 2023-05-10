@@ -82,7 +82,7 @@ frontend.url = /home/hou/IdeaProjects/TinyNginx/src/main/resources/dist
 
 前端：浏览器输入 http://localhost:8081/index.html
 
-![3.png](static%2F3.png)
+![3.png](./static%2F3.png)
 
 后端：在postman上 发送post请求 http://localhost:8081/webapp/home/dologin 
 
