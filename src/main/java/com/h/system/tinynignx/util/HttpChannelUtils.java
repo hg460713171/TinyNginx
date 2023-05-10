@@ -1,5 +1,6 @@
 package com.h.system.tinynignx.util;
 
+import com.h.system.tinynignx.loadbalance.BaseRouter;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -46,12 +47,12 @@ public class HttpChannelUtils {
         return keepAlive;
     }
 
-    public static void attributeRoute(Channel channel, InetSocketAddress route) {
+    public static void attributeRoute(Channel channel, BaseRouter route) {
         channel.attr(ROUTE_ATTRIBUTE).set(route);
     }
 
 
-    public static InetSocketAddress getRoute(Channel channel) {
-        return (InetSocketAddress) channel.attr(ROUTE_ATTRIBUTE).get();
+    public static BaseRouter getRoute(Channel channel) {
+        return (BaseRouter) channel.attr(ROUTE_ATTRIBUTE).get();
     }
 }

@@ -2,6 +2,7 @@ package com.h.system.tinynignx.boot;
 
 import com.h.system.tinynignx.loadbalance.LoadBalancerHolder;
 import com.h.system.tinynignx.pool.ChannelPoolHolder;
+import com.h.system.tinynignx.pool.NettyChannelPool;
 import com.h.system.tinynignx.server.NettyServer;
 import com.h.system.tinynignx.util.ResourcesService;
 
@@ -17,7 +18,7 @@ public class TinyNginxBoot {
         // channelpool 用于 server-client的对应关系
         // 前端--（连接1）-> lb --（连接2）-> 后端 ---（连接2）--> lb --（通过channelpool 找到连接1）--> 前端
         ChannelPoolHolder.getInstance().init();
-
+        NettyChannelPool.getInstance();
         //初始化 server（代理静态资源+动态资源） 并wait 主线程
         NettyServer nettyServer = new NettyServer();
         nettyServer.init();

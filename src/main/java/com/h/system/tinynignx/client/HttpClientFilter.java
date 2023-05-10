@@ -1,5 +1,6 @@
 package com.h.system.tinynignx.client;
 
+import com.h.system.tinynignx.pool.NettyChannelPool;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
@@ -12,6 +13,7 @@ public class HttpClientFilter extends ChannelInitializer<SocketChannel> {
         ch.pipeline().addLast("decoder",new HttpRequestDecoder());
         ch.pipeline().addLast("aggregator", new HttpObjectAggregator(10*1024*1024));
         ch.pipeline().addLast("decompressor",new HttpContentDecompressor());
-        ch.pipeline().addLast("httphandler",new HttpClientInboundHandler());
+        HttpClientInboundHandler httpClientInboundHandler = new HttpClientInboundHandler();
+        ch.pipeline().addLast("httphandler",httpClientInboundHandler);
     }
 }

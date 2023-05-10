@@ -17,6 +17,7 @@ package com.h.system.tinynignx.pool;
 
 
 import com.h.system.tinynignx.client.HttpClientFilter;
+import com.h.system.tinynignx.loadbalance.BaseRouter;
 import com.h.system.tinynignx.util.HttpChannelUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -38,6 +39,8 @@ import java.util.logging.Logger;
 
 public class NettyChannelPool {
     private static final Logger  logger = Logger.getLogger(NettyChannelPool.class.getName());
+
+    private static volatile NettyChannelPool INSTANCE;
 
     // channel pools per route
     private ConcurrentMap<String, LinkedBlockingQueue<Channel>> routeToPoolChannels;
@@ -131,22 +134,37 @@ public class NettyChannelPool {
      * @throws IOException
      * @throws Exception
      */
-    public void sendRequest(InetSocketAddress route, final HttpRequest request)
+    public void sendRequest(BaseRouter route, Channel serverChannel, final HttpRequest request)
                                                                                                   throws InterruptedException,
                                                                                                   IOException {
-        if (sendRequestUsePooledChannel(route, request, false)) {
+        if (sendRequestUsePooledChannel(route, request, serverChannel,false)) {
             return ;
         }
 
-        if (sendRequestUseNewChannel(route, request)) {
+        if (sendRequestUseNewChannel(route,serverChannel, request)) {
             return;
         }
 
-        if (sendRequestUsePooledChannel(route, request, true)) {
+        if (sendRequestUsePooledChannel(route, request,serverChannel, true)) {
             return;
         }
 
         throw new IOException("send request failed");
+    }
+
+    public void doWriteAndFlush(Channel clientChannel,Channel serverChannel,final HttpRequest request){
+        synchronized (this){
+            ChannelPool channelPool = ChannelPoolHolder.getInstance().getChannelPool();
+            channelPool.getClientChannelMap().put(clientChannel.id().asLongText(),
+                    clientChannel);
+
+            channelPool.getServerChannelMap().put(serverChannel.id().asLongText(),
+                    serverChannel);
+
+            channelPool.getClientToServer().put(clientChannel.id().asLongText(),
+                    serverChannel.id().asLongText());
+        }
+        clientChannel.writeAndFlush(request).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
     }
 
     /**
@@ -157,7 +175,7 @@ public class NettyChannelPool {
     public void returnChannel(Channel channel) {
 
         InetSocketAddress route = (InetSocketAddress) channel.remoteAddress();
-        String key = getKey(route);
+        String key = route.getHostName() + COLON + route.getPort();
         LinkedBlockingQueue<Channel> poolChannels = routeToPoolChannels.get(key);
 
         if (null != channel && channel.isActive()) {
@@ -194,9 +212,7 @@ public class NettyChannelPool {
     private void removeChannel(Channel channel, Throwable cause) {
 
         InetSocketAddress route = (InetSocketAddress) channel.remoteAddress();
-        String key = getKey(route);
-
-
+        String key = route.getHostName() + COLON + route.getPort();;
         LinkedBlockingQueue<Channel> poolChannels = routeToPoolChannels.get(key);
         if (poolChannels.remove(channel)) {
             logger.log(Level.INFO, channel + " removed");
@@ -205,7 +221,7 @@ public class NettyChannelPool {
 
     }
 
-    private boolean sendRequestUsePooledChannel(InetSocketAddress route, final HttpRequest request,
+    private boolean sendRequestUsePooledChannel(BaseRouter route, final HttpRequest request,Channel serverChannel,
                                                 boolean isWaiting) throws InterruptedException {
         LinkedBlockingQueue<Channel> poolChannels = getPoolChannels(getKey(route));
         Channel channel = poolChannels.poll();
@@ -226,13 +242,11 @@ public class NettyChannelPool {
         }
 
         logger.log(Level.INFO, channel + " reuse");
-
-        channel.writeAndFlush(request).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
+        doWriteAndFlush(channel,serverChannel,request);
         return true;
     }
 
-    private boolean sendRequestUseNewChannel(final InetSocketAddress route,
-                                             final HttpRequest request) {
+    private boolean sendRequestUseNewChannel(final BaseRouter route,Channel serverChannel, final HttpRequest request) throws InterruptedException {
         ChannelFuture future = createChannelFuture(route);
         if (null != future) {
             HttpChannelUtils.attributeRoute(future.channel(), route);
@@ -241,9 +255,7 @@ public class NettyChannelPool {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
-
                         future.channel().closeFuture().addListener(new ChannelFutureListener() {
-
                             @Override
                             public void operationComplete(ChannelFuture future) throws Exception {
 
@@ -253,7 +265,7 @@ public class NettyChannelPool {
                             }
 
                         });
-                        future.channel().writeAndFlush(request).addListener(CLOSE_ON_FAILURE);
+                        doWriteAndFlush(future.channel(),serverChannel,request);
                     } else {
                         logger.log(Level.SEVERE, future.channel() + " connect failed, exception: "
                                                  + future.cause());
@@ -269,7 +281,7 @@ public class NettyChannelPool {
     }
 
     public void releaseCreatePerRoute(Channel channel) {
-        InetSocketAddress route = HttpChannelUtils.getRoute(channel);
+        BaseRouter route = HttpChannelUtils.getRoute(channel);
         getAllowCreatePerRoute(getKey(route)).release();
     }
 
@@ -297,17 +309,17 @@ public class NettyChannelPool {
         return oldPoolChannels;
     }
 
-    private String getKey(InetSocketAddress route) {
-        return route.getHostName() + COLON + route.getPort();
+    private String getKey(BaseRouter route) {
+        return route.getIp() + COLON + route.getPort();
     }
 
-    private ChannelFuture createChannelFuture(InetSocketAddress route) {
+    private ChannelFuture createChannelFuture(BaseRouter route) {
         String key = getKey(route);
 
         Semaphore allowCreate = getAllowCreatePerRoute(key);
         if (allowCreate.tryAcquire()) {
             try {
-                ChannelFuture connectFuture = clientBootstrap.connect(route.getHostName(), route
+                ChannelFuture connectFuture = clientBootstrap.connect(route.getIp(), route
                     .getPort());
                 return connectFuture;
             } catch (Exception e) {
@@ -316,5 +328,16 @@ public class NettyChannelPool {
             }
         }
         return null;
+    }
+
+    public static NettyChannelPool getInstance() {
+        if (INSTANCE == null) {
+            synchronized(NettyChannelPool.class){
+                if(INSTANCE == null){
+                    INSTANCE = new NettyChannelPool(null,0,0,null,null);
+                }
+            }
+        }
+        return INSTANCE;
     }
 }

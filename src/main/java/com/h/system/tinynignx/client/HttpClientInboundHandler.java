@@ -18,9 +18,7 @@ import java.util.logging.Logger;
 public class HttpClientInboundHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = Logger.getLogger(HttpClientInboundHandler.class.getName());
 
-    private NettyChannelPool connectMananger;
-    public void channelRead(ChannelHandlerContext ctx, Object msg)
-            throws Exception {
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         //开始对服务器的响应做处理
         FullHttpResponse httpResponse = (FullHttpResponse)msg;
         ChannelPool channelPool = ChannelPoolHolder.getInstance().getChannelPool();
@@ -31,7 +29,7 @@ public class HttpClientInboundHandler extends ChannelInboundHandlerAdapter {
         ByteBuf content = httpResponse.content();
         System.out.println(content.toString(CharsetUtil.UTF_8));
 //        content.release();
-        connectMananger.returnChannel(ctx.channel());
+        NettyChannelPool.getInstance().returnChannel(ctx.channel());
         synchronized (this){
             ChannelPoolHolder.getInstance().removeAll(ctx.channel().id().asLongText());
         }
@@ -46,4 +44,5 @@ public class HttpClientInboundHandler extends ChannelInboundHandlerAdapter {
             ctx.fireUserEventTriggered(evt);
         }
     }
+
 }

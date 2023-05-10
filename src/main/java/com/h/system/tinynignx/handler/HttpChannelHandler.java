@@ -6,14 +6,16 @@ import com.h.system.tinynignx.loadbalance.BaseRouter;
 import com.h.system.tinynignx.loadbalance.LoadBalancerHolder;
 import com.h.system.tinynignx.pool.ChannelPool;
 import com.h.system.tinynignx.pool.ChannelPoolHolder;
+import com.h.system.tinynignx.pool.NettyChannelPool;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 
 public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
@@ -35,36 +37,22 @@ public class HttpChannelHandler implements  MyChannelInboundHandlerAdapter{
             AbstractLoadBalancer al = LoadBalancerHolder.getInstance().getLoadBalancer();
             InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
             BaseRouter baseRouter = al.getRouter(httpRequest,socketAddress.getHostString());
-            HttpClient client = HttpClient.init(baseRouter.getIp(),baseRouter.getPort());
 
+            NettyChannelPool pool = NettyChannelPool.getInstance();
 
-            DefaultFullHttpRequest request =
-                    new DefaultFullHttpRequest(HttpVersion.HTTP_1_1,
-                            method,
-                            path,
-                            Unpooled.wrappedBuffer(body.getBytes("UTF-8")));
+            DefaultFullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, method, path,
+                    Unpooled.wrappedBuffer(body.getBytes("UTF-8")));
 
             // 构建http请求
             request.headers().set(HttpHeaderNames.HOST, baseRouter.getIp());
-            request.headers()
-                    .set(HttpHeaderNames.CONNECTION,
-                            HttpHeaderValues.KEEP_ALIVE);
-            request.headers()
-                    .set(HttpHeaderNames.CONTENT_LENGTH,
-                            request.content().readableBytes());
+            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            request.headers().set(HttpHeaderNames.CONTENT_LENGTH, request.content().readableBytes());
+
+
+            pool.sendRequest(baseRouter,ctx.channel(),request);
+
             // 发送http请求
-            synchronized (this){
-                ChannelPool channelPool = ChannelPoolHolder.getInstance().getChannelPool();
-                channelPool.getClientChannelMap().put(client.channelFuture.channel().id().asLongText(),
-                        client.channelFuture.channel());
 
-                channelPool.getServerChannelMap().put(ctx.channel().id().asLongText(),
-                        ctx.channel());
-
-                channelPool.getClientToServer().put(client.channelFuture.channel().id().asLongText(),
-                        ctx.channel().id().asLongText());
-            }
-            client.channelFuture.channel().writeAndFlush(request);
 
 //
 //            send(ctx,result,HttpResponseStatus.OK);
