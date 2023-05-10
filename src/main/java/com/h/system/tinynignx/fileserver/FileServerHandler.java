@@ -1,7 +1,7 @@
 package com.h.system.tinynignx.fileserver;
 
 
-import com.h.system.tinynignx.util.HttpWirteResponseUtil;
+import com.h.system.tinynignx.util.HttpChannelUtils;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedNioFile;
@@ -42,7 +42,7 @@ public class FileServerHandler extends ChannelInboundHandlerAdapter {
 //            }
             int index = uri.lastIndexOf("/") + 1;
             if(index == -1){
-                HttpWirteResponseUtil.writeResponse(request, OK, channelHandlerContext);
+                HttpChannelUtils.writeResponse(request, OK, channelHandlerContext);
                 return;
             }
             String filename = uri.substring(index);
@@ -55,13 +55,13 @@ public class FileServerHandler extends ChannelInboundHandlerAdapter {
             try {
                 randomAccessFile = new RandomAccessFile(file, "r");
             } catch (FileNotFoundException e) {
-                HttpWirteResponseUtil.writeResponse(request, NOT_FOUND, channelHandlerContext);
+                HttpChannelUtils.writeResponse(request, NOT_FOUND, channelHandlerContext);
                 e.printStackTrace();
                 return;
             }
 
             if(!file.exists() || file.isHidden()){
-                HttpWirteResponseUtil.writeResponse(request, NOT_FOUND, channelHandlerContext);
+                HttpChannelUtils.writeResponse(request, NOT_FOUND, channelHandlerContext);
                 return;
             }
             long fileLength = randomAccessFile.length();

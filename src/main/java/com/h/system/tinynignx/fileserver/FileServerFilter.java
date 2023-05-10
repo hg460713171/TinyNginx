@@ -17,6 +17,5 @@ public class FileServerFilter extends ChannelInitializer<SocketChannel> {
         ch.pipeline().addLast("aggregator", new HttpObjectAggregator(10*1024*1024));//把单个http请求转为FullHttpReuest或FullHttpResponse
         ch.pipeline().addLast(new ChunkedWriteHandler());
         ch.pipeline().addLast("handler", new FileServerHandler());// 服务端业务逻辑
-
     }
 }

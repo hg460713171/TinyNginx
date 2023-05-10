@@ -1,16 +1,20 @@
 package com.h.system.tinynignx.util;
 
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
+import java.net.InetSocketAddress;
 import java.util.Set;
 
-public class HttpWirteResponseUtil {
+public class HttpChannelUtils {
 
+    private static final AttributeKey<Object> ROUTE_ATTRIBUTE = AttributeKey.valueOf("route");
 
     public static boolean writeResponse(FullHttpRequest request, HttpResponseStatus status, ChannelHandlerContext ctx) {
         // Decide whether to close the connection or not.
@@ -40,5 +44,14 @@ public class HttpWirteResponseUtil {
         // Write the response.
         ctx.write(response);
         return keepAlive;
+    }
+
+    public static void attributeRoute(Channel channel, InetSocketAddress route) {
+        channel.attr(ROUTE_ATTRIBUTE).set(route);
+    }
+
+
+    public static InetSocketAddress getRoute(Channel channel) {
+        return (InetSocketAddress) channel.attr(ROUTE_ATTRIBUTE).get();
     }
 }
