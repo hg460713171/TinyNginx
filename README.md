@@ -97,6 +97,11 @@ frontend.url = /home/hou/IdeaProjects/TinyNginx/src/main/resources/dist
 ## server的实现
 基于netty 实现server 
 ## client+连接池的实现
+基于netty 实现client
+
+
+NettyChannelPool 类的实现
+
 ## 负载均衡算法的实现
 ### 扩展负载均衡算法
 ## 高并发的实现
